@@ -1,0 +1,21 @@
+# Team data
+data/robot_data.txt
+data/dictionary.json
+data/prompts.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.log
+.env
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
