@@ -1,0 +1,38 @@
+{
+  "team_info": {
+    "team_name": "Two Steps Ahead",
+    "team_number": "10600",
+    "location": "Edison, New Jersey",
+    "email": "twostepsaheadrobotics@gmail.com",
+    "instagram": "@twostepsahead.robotics",
+    "website": "https://stepsahead10600.web.app",
+    "members": "25 students, 1 mentor",
+    "subteams": "Mechanical, Electrical, Software",
+    "outreach": "97% of alumni go into STEM fields",
+    "awards": "Dean's List Semi-Finalist, Rookie All-Star Award"
+  },
+  "robot_info": {
+    "robot_name": "Double Dip",
+    "season": "2026",
+    "drivetrain": "Swerve drive with 4x SDS MK4i modules powered by Kraken X60 motors",
+    "top_speed": "13.5 feet per second",
+    "battery": "12V 18Ah main battery, 6 spares per event",
+    "scoring": "Scores FUEL game pieces into the HUB",
+    "intake": "Ground intake using acrylic tubes covered in Cat Tongue grip tape",
+    "shooter": "Double shooter \u2014 can empty the full hopper in seconds",
+    "language": "Java with WPILib framework",
+    "autonomous": "PathPlanner for path generation, PhotonVision with 4 cameras for AprilTag tracking",
+    "data_logging": "AdvantageKit for data logging and match replay"
+  },
+  "game_info": {
+    "game_name": "REEFSCAPE (2026 FRC Season)",
+    "objective": "Teams score FUEL game pieces into the HUB to earn points",
+    "game_pieces": "FUEL \u2014 small game pieces collected from the floor and scored into the HUB",
+    "hub": "The central scoring structure where FUEL is deposited for points",
+    "autonomous": "15-second autonomous period where robots score pre-loaded FUEL without driver input",
+    "teleop": "2-minute 15-second driver-controlled period for collecting and scoring FUEL",
+    "endgame": "Robots attempt to climb or park on structures for bonus points",
+    "ranking_points": "Awarded for meeting FUEL scoring thresholds and for climbing"
+  },
+  "system_prompt": "You are Avacado, the pit assistant for FRC Team 10600 Two Steps Ahead. Answer in exactly 1-2 sentences. Neutral tone. No enthusiasm, no filler, no extra context. Use only the facts in the provided context and team info. Do not mention yourself or the team name unless directly asked. Do not repeat the question back. Do not say 'Great question' or similar. If the answer is not available say exactly: \"Great question. I don't have that information. Ask one of our team members at the pit.\""
+}

@@ -1,0 +1,44 @@
+Team Name: Two Steps Ahead
+Team Number: 10600
+School: N/A (we are a community-based team)
+Location: Edison, New Jersey
+Founded: 2024-2025
+
+2026 Robot Name: Avocado Pit Thrower 67
+Game: REBUILT 2026
+Weight: 90 lbs
+Frame Size: 27 x 27 inches
+Drivetrain: Swerve drive with 4x SDS MK4i modules powered by Kraken x60 motors
+Top Speed: 13.5 ft per second
+Battery: 12V 18Ah, we carry 6 spares to every event
+
+Scoring Capabilities:
+- Scores FUEL game pieces into the HUB
+- Autonomous routine: not yet tested
+- Average teleop score: not yet tested
+
+Mechanisms:
+- Ground intake with acrylic tubes covered in cats tongue, fills up hopper in under x secondS
+- A double shooter that can empty the hopper in under x seconds
+
+Software Stack (Programming Language): Java
+- Java with WPILib framework
+- PathPlanner for autonomous path generation
+- PhotonVision with a Limelight 4 cameras for AprilTag tracking
+- AdvantageKit for data logging and replay
+
+Awards and Events in 2025:
+- Got into Dean's list semi-finals
+- Won a rookie all star award
+
+Team Demographics:
+-  25 students total, 1 mentor
+- Subteams: Mechanical, Electrical, Software
+- We have done an outreach event at our workshop
+- Over 97 percent of alumni go on to STEM careers or majors
+
+Fun Facts:
+- We 3D printed 15 custom parts on this robot this season
+- We have competed at districs once
+- Build season took 8 weeks with over 2500 student hours logged
+- Our robot can shoot our entire hopper's worth of fuel in under x second
