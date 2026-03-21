@@ -5,35 +5,79 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avocado Admin</title>
 <style>
-  :root { --green:#00ff41; --bg:#0a0a0a; --gray:#1a1a1a; --border:#2a2a2a; }
+  :root { --green:#00ff41; --bg:#0a0a0a; --gray:#1a1a1a; --border:#2a2a2a; --red:#ff4444; }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--bg); color:#e0e0e0; font-family:'Segoe UI',sans-serif; padding:24px; }
   h1 { color:var(--green); font-size:1.4rem; margin-bottom:4px; text-shadow:0 0 10px var(--green); }
   .sub { color:#555; font-size:0.75rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:24px; }
+  .sub a { color:#555; }
+
+  /* Tabs */
+  .tabs { display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:0; }
+  .tab {
+    padding:8px 18px; cursor:pointer; font-size:0.82rem; font-weight:600;
+    color:#555; border:1px solid transparent; border-bottom:none;
+    border-radius:6px 6px 0 0; transition:all .2s; letter-spacing:.05em; text-transform:uppercase;
+  }
+  .tab:hover { color:#aaa; }
+  .tab.active { color:var(--green); border-color:var(--border); background:var(--gray); margin-bottom:-1px; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
   .card { background:var(--gray); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:20px; }
   h2 { color:var(--green); font-size:1rem; margin-bottom:12px; }
-  textarea { width:100%; background:#060f08; border:1px solid var(--border); color:#e0e0e0;
+  textarea {
+    width:100%; background:#060f08; border:1px solid var(--border); color:#e0e0e0;
     border-radius:6px; padding:12px; font-family:monospace; font-size:0.82rem;
-    resize:vertical; min-height:220px; outline:none; }
+    resize:vertical; min-height:220px; outline:none;
+  }
   textarea:focus { border-color:var(--green); }
-  .row { display:flex; gap:10px; margin-top:10px; }
-  button { background:var(--green); color:#000; border:none; border-radius:6px;
-    padding:9px 20px; font-weight:700; font-size:0.85rem; cursor:pointer; }
+  .row { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  button {
+    background:var(--green); color:#000; border:none; border-radius:6px;
+    padding:9px 20px; font-weight:700; font-size:0.85rem; cursor:pointer; transition:opacity .2s;
+  }
   button:hover { opacity:.85; }
-  button.danger { background:#ff4444; color:#fff; }
+  button.danger { background:var(--red); color:#fff; }
+  button.secondary { background:transparent; color:var(--green); border:1px solid var(--green); }
   .msg { margin-top:8px; font-size:0.8rem; color:var(--green); min-height:18px; }
-  .msg.err { color:#ff4444; }
+  .msg.err { color:var(--red); }
+
+  /* Login */
   #login { max-width:360px; margin:80px auto; text-align:center; }
-  #login input { width:100%; background:var(--gray); border:1px solid var(--border);
+  #login input {
+    width:100%; background:var(--gray); border:1px solid var(--border);
     color:#e0e0e0; border-radius:6px; padding:10px 14px; font-size:0.95rem;
-    outline:none; margin:16px 0 10px; }
+    outline:none; margin:16px 0 10px;
+  }
   #login input:focus { border-color:var(--green); }
-  .stat { display:inline-block; background:var(--bg); border:1px solid var(--border);
-    border-radius:6px; padding:8px 16px; font-size:0.78rem; margin-right:8px; margin-bottom:8px; }
-  .stat span { color:var(--green); font-weight:700; font-size:1.1rem; display:block; }
+
+  /* Stats */
+  .stat-grid { display:flex; flex-wrap:wrap; gap:10px; }
+  .stat {
+    background:var(--bg); border:1px solid var(--border); border-radius:6px;
+    padding:10px 18px; font-size:0.78rem; min-width:130px;
+  }
+  .stat span { color:var(--green); font-weight:700; font-size:1.2rem; display:block; margin-bottom:2px; }
+
+  /* Analytics */
+  .q-list { list-style:none; }
+  .q-list li {
+    padding:8px 12px; border-bottom:1px solid var(--border);
+    font-size:0.82rem; display:flex; justify-content:space-between; align-items:center;
+  }
+  .q-list li:last-child { border-bottom:none; }
+  .badge {
+    background:rgba(0,255,65,0.15); color:var(--green);
+    border-radius:4px; padding:2px 8px; font-size:0.75rem; font-weight:700;
+    flex-shrink:0; margin-left:10px;
+  }
+  .badge.red { background:rgba(255,68,68,0.15); color:var(--red); }
+  .ts { color:#444; font-size:0.72rem; flex-shrink:0; margin-left:10px; }
 </style>
 </head>
 <body>
+
 <div id="login">
   <h1>AVOCADO ADMIN</h1>
   <p class="sub">Two Steps Ahead · FRC 10600</p>
@@ -42,104 +86,188 @@
   <div class="msg err" id="login-err"></div>
 </div>
 
-<div id="panel" style="display:none;max-width:860px;margin:0 auto;">
+<div id="panel" style="display:none; max-width:900px; margin:0 auto;">
   <h1>AVOCADO ADMIN</h1>
-  <p class="sub">Two Steps Ahead · FRC 10600 &nbsp;·&nbsp; <a href="/" style="color:#555">Back to chat</a></p>
+  <p class="sub">Two Steps Ahead · FRC 10600 &nbsp;·&nbsp; <a href="/">Back to chat</a></p>
 
-  <div class="card">
-    <h2>System Status</h2>
-    <div id="stats">Loading...</div>
-    <div class="row"><button onclick="loadStats()">Refresh</button></div>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('status')">Status</div>
+    <div class="tab" onclick="showTab('analytics')">Analytics</div>
+    <div class="tab" onclick="showTab('robot')">Robot Data</div>
+    <div class="tab" onclick="showTab('dict')">Dictionary</div>
+    <div class="tab" onclick="showTab('danger')">Danger Zone</div>
   </div>
 
-  <div class="card">
-    <h2>Robot Data</h2>
-    <textarea id="robot-data" placeholder="Loading..."></textarea>
-    <div class="row">
-      <button onclick="saveRobot()">Save & Reload</button>
+  <!-- STATUS -->
+  <div id="tab-status" class="tab-content active">
+    <div class="card">
+      <h2>System Status</h2>
+      <div class="stat-grid" id="stats">Loading...</div>
+      <div class="row" style="margin-top:14px">
+        <button onclick="loadStats()">Refresh</button>
+      </div>
     </div>
-    <div class="msg" id="robot-msg"></div>
   </div>
 
-  <div class="card">
-    <h2>Dictionary (JSON)</h2>
-    <textarea id="dict-data" placeholder="Loading..." style="min-height:300px;"></textarea>
-    <div class="row">
-      <button onclick="saveDict()">Save & Reload</button>
+  <!-- ANALYTICS -->
+  <div id="tab-analytics" class="tab-content">
+    <div class="card">
+      <h2>Overview</h2>
+      <div class="stat-grid" id="analytics-overview">Loading...</div>
+      <div class="row" style="margin-top:14px">
+        <button onclick="loadAnalytics()">Refresh</button>
+      </div>
     </div>
-    <div class="msg" id="dict-msg"></div>
+    <div class="card">
+      <h2>Top Questions</h2>
+      <ul class="q-list" id="top-questions"><li>Loading...</li></ul>
+    </div>
+    <div class="card">
+      <h2>Unanswered Questions</h2>
+      <p style="font-size:0.8rem;color:#555;margin-bottom:10px;">Add these to your dictionary to improve accuracy.</p>
+      <ul class="q-list" id="unanswered-questions"><li>Loading...</li></ul>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>Danger Zone</h2>
-    <div class="row">
-      <button class="danger" onclick="clearRAG()">Clear RAG Index</button>
-      <button class="danger" onclick="clearSessions()">Clear All Sessions</button>
+  <!-- ROBOT DATA -->
+  <div id="tab-robot" class="tab-content">
+    <div class="card">
+      <h2>robot_data.txt</h2>
+      <textarea id="robot-data" placeholder="Loading..."></textarea>
+      <div class="row">
+        <button onclick="saveRobot()">Save & Reload</button>
+      </div>
+      <div class="msg" id="robot-msg"></div>
     </div>
-    <div class="msg" id="danger-msg"></div>
   </div>
+
+  <!-- DICTIONARY -->
+  <div id="tab-dict" class="tab-content">
+    <div class="card">
+      <h2>dictionary.json</h2>
+      <p style="font-size:0.8rem;color:#555;margin-bottom:10px;">Edit as JSON. Each key is a question, each value is the answer.</p>
+      <textarea id="dict-data" placeholder="Loading..." style="min-height:360px;"></textarea>
+      <div class="row">
+        <button onclick="saveDict()">Save & Reload</button>
+      </div>
+      <div class="msg" id="dict-msg"></div>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div id="tab-danger" class="tab-content">
+    <div class="card">
+      <h2>Danger Zone</h2>
+      <div class="row">
+        <button class="danger" onclick="clearRAG()">Clear RAG Index</button>
+        <button class="danger" onclick="clearSessions()">Clear All Sessions</button>
+      </div>
+      <div class="msg" id="danger-msg"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
 let token = '';
 
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'analytics') loadAnalytics();
+  if (name === 'robot') loadRobot();
+  if (name === 'dict') loadDict();
+  if (name === 'status') loadStats();
+}
+
 function login() {
-  const pw = document.getElementById('pw').value;
   fetch('/admin/login', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({password: pw})
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({password: document.getElementById('pw').value})
   }).then(r=>r.json()).then(d=>{
     if (d.token) {
       token = d.token;
       document.getElementById('login').style.display = 'none';
       document.getElementById('panel').style.display = 'block';
-      loadAll();
+      loadStats();
     } else {
       document.getElementById('login-err').textContent = 'Wrong password';
     }
   });
 }
 
-function authFetch(url, opts={}) {
+function af(url, opts={}) {
   opts.headers = {...(opts.headers||{}), 'X-Admin-Token': token};
   return fetch(url, opts);
 }
 
-function loadAll() { loadStats(); loadRobot(); loadDict(); }
-
 function loadStats() {
-  authFetch('/admin/stats').then(r=>r.json()).then(d=>{
+  af('/admin/stats').then(r=>r.json()).then(d=>{
     document.getElementById('stats').innerHTML =
-      `<div class="stat">RAG Chunks<span>${d.rag_chunks}</span></div>` +
-      `<div class="stat">Active Sessions<span>${d.active_sessions}</span></div>` +
-      `<div class="stat">Dictionary Entries<span>${d.dict_entries}</span></div>` +
-      `<div class="stat">Ollama<span>${d.ollama}</span></div>` +
-      `<div class="stat">Model<span>${d.model}</span></div>`;
+      stat('RAG Chunks', d.rag_chunks) +
+      stat('Active Sessions', d.active_sessions) +
+      stat('Dictionary Entries', d.dict_entries) +
+      stat('Ollama', d.ollama) +
+      stat('Model', d.model);
+  });
+}
+
+function stat(label, val) {
+  return `<div class="stat"><span>${val}</span>${label}</div>`;
+}
+
+function loadAnalytics() {
+  af('/admin/analytics').then(r=>r.json()).then(d=>{
+    if (d.error) { document.getElementById('analytics-overview').innerHTML = d.error; return; }
+
+    document.getElementById('analytics-overview').innerHTML =
+      stat('Total Questions', d.total) +
+      stat('Answered', d.answered) +
+      stat('Unanswered', d.unanswered) +
+      stat('Dictionary Hits', d.dict_hits) +
+      stat('AI Hits', d.ai_hits) +
+      stat('Avg AI Time', d.avg_ai_time + 's');
+
+    const topEl = document.getElementById('top-questions');
+    if (d.top_questions.length === 0) {
+      topEl.innerHTML = '<li>No questions yet</li>';
+    } else {
+      topEl.innerHTML = d.top_questions.map(q =>
+        `<li>${q.q}<span class="badge">${q.count}x</span></li>`
+      ).join('');
+    }
+
+    const unEl = document.getElementById('unanswered-questions');
+    if (d.unanswered_questions.length === 0) {
+      unEl.innerHTML = '<li>None</li>';
+    } else {
+      unEl.innerHTML = d.unanswered_questions.map(q =>
+        `<li>${q.q}<span class="ts">${q.ts.split('T')[0]}</span></li>`
+      ).join('');
+    }
   });
 }
 
 function loadRobot() {
-  authFetch('/admin/robot-data').then(r=>r.json()).then(d=>{
+  af('/admin/robot-data').then(r=>r.json()).then(d=>{
     document.getElementById('robot-data').value = d.content || '';
   });
 }
 
 function loadDict() {
-  authFetch('/admin/dictionary').then(r=>r.json()).then(d=>{
+  af('/admin/dictionary').then(r=>r.json()).then(d=>{
     document.getElementById('dict-data').value = JSON.stringify(d.content, null, 2);
   });
 }
 
 function saveRobot() {
-  const content = document.getElementById('robot-data').value;
-  authFetch('/admin/robot-data', {
+  af('/admin/robot-data', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({content})
+    body: JSON.stringify({content: document.getElementById('robot-data').value})
   }).then(r=>r.json()).then(d=>{
-    const el = document.getElementById('robot-msg');
-    el.textContent = d.message || d.error;
-    el.className = 'msg' + (d.error ? ' err' : '');
+    setMsg('robot-msg', d.message || d.error, !!d.error);
     if (!d.error) loadStats();
   });
 }
@@ -147,32 +275,36 @@ function saveRobot() {
 function saveDict() {
   let parsed;
   try { parsed = JSON.parse(document.getElementById('dict-data').value); }
-  catch(e) { document.getElementById('dict-msg').textContent='Invalid JSON: '+e.message; return; }
-  authFetch('/admin/dictionary', {
+  catch(e) { setMsg('dict-msg', 'Invalid JSON: ' + e.message, true); return; }
+  af('/admin/dictionary', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({content: parsed})
   }).then(r=>r.json()).then(d=>{
-    const el = document.getElementById('dict-msg');
-    el.textContent = d.message || d.error;
-    el.className = 'msg' + (d.error ? ' err' : '');
+    setMsg('dict-msg', d.message || d.error, !!d.error);
     if (!d.error) loadStats();
   });
 }
 
 function clearRAG() {
   if (!confirm('Clear the entire RAG index?')) return;
-  authFetch('/ingest', {method:'DELETE'}).then(r=>r.json()).then(d=>{
-    document.getElementById('danger-msg').textContent = d.message;
+  af('/ingest', {method:'DELETE'}).then(r=>r.json()).then(d=>{
+    setMsg('danger-msg', d.message, false);
     loadStats();
   });
 }
 
 function clearSessions() {
   if (!confirm('Clear all conversation sessions?')) return;
-  authFetch('/admin/clear-sessions', {method:'POST'}).then(r=>r.json()).then(d=>{
-    document.getElementById('danger-msg').textContent = d.message;
+  af('/admin/clear-sessions', {method:'POST'}).then(r=>r.json()).then(d=>{
+    setMsg('danger-msg', d.message, false);
     loadStats();
   });
+}
+
+function setMsg(id, text, isErr) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg' + (isErr ? ' err' : '');
 }
 </script>
 </body>

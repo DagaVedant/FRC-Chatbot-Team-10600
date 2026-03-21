@@ -38,8 +38,8 @@ try:
     time.sleep(4)
     print("  [OK] Ollama started")
 except FileNotFoundError:
-    print("  [!!] Ollama not found — make sure it is installed")
-    print("       Download from: https://ollama.com")
+    print("[!!] Ollama not found — make sure it is installed")
+    print("[!!] Download from: https://ollama.com")
     input("  Press Enter to exit...")
     sys.exit(1)
 

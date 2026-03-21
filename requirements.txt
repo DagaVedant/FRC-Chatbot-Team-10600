@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 requests
+httpx
 pypdf
 scikit-learn
 numpy
