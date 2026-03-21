@@ -161,6 +161,7 @@
       <div class="row">
         <button class="danger" onclick="clearRAG()">Clear RAG Index</button>
         <button class="danger" onclick="clearSessions()">Clear All Sessions</button>
+        <button class="danger" onclick="clearCache()">Clear Response Cache</button>
       </div>
       <div class="msg" id="danger-msg"></div>
     </div>
@@ -209,6 +210,7 @@ function loadStats() {
       stat('RAG Chunks', d.rag_chunks) +
       stat('Active Sessions', d.active_sessions) +
       stat('Dictionary Entries', d.dict_entries) +
+      stat('Cache Size', d.cache_size) +
       stat('Ollama', d.ollama) +
       stat('Model', d.model);
   });
@@ -228,7 +230,8 @@ function loadAnalytics() {
       stat('Unanswered', d.unanswered) +
       stat('Dictionary Hits', d.dict_hits) +
       stat('AI Hits', d.ai_hits) +
-      stat('Avg AI Time', d.avg_ai_time + 's');
+      stat('Avg AI Time', d.avg_ai_time + 's') +
+      stat('Cache Hits', d.cached_hits);
 
     const topEl = document.getElementById('top-questions');
     if (d.top_questions.length === 0) {
@@ -296,6 +299,14 @@ function clearRAG() {
 function clearSessions() {
   if (!confirm('Clear all conversation sessions?')) return;
   af('/admin/clear-sessions', {method:'POST'}).then(r=>r.json()).then(d=>{
+    setMsg('danger-msg', d.message, false);
+    loadStats();
+  });
+}
+
+function clearCache() {
+  if (!confirm('Clear the response cache?')) return;
+  af('/admin/clear-cache', {method:'POST'}).then(r=>r.json()).then(d=>{
     setMsg('danger-msg', d.message, false);
     loadStats();
   });

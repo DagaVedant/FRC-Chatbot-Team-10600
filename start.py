@@ -14,12 +14,8 @@ def get_local_ip():
     except:
         return "localhost"
 
-print()
-print("  ============================================")
-print("   AVOCADO - FRC Team 10600 Pit Assistant")
-print("   Two Steps Ahead")
-print("  ============================================")
-print()
+print("AVOCADO - FRC Team 10600 Pit Assistant")
+print("Two Steps Ahead")
 
 # Start Ollama in the background
 print("  [..] Starting Ollama...")
@@ -36,21 +32,20 @@ try:
             stderr=subprocess.DEVNULL
         )
     time.sleep(4)
-    print("  [OK] Ollama started")
+    print("[OK] Ollama started")
 except FileNotFoundError:
     print("[!!] Ollama not found — make sure it is installed")
     print("[!!] Download from: https://ollama.com")
-    input("  Press Enter to exit...")
+    input("Press Enter to exit...")
     sys.exit(1)
 
 ip = get_local_ip()
 print()
-print(f"  [OK] Server starting...")
-print(f"  [OK] Local:   http://localhost:8000")
-print(f"  [OK] Network: http://{ip}:8000")
+print("[OK] Server starting...")
+print("[OK] Local:   http://localhost:8000")
+print(f"[OK] Network: http://{ip}:8000")
 print()
-print("  Press Ctrl+C to stop")
-print("  ============================================")
+print("Press Ctrl+C to stop")
 print()
 
 # Start the FastAPI server — always from the script's own directory

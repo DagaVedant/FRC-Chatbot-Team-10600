@@ -6,3 +6,5 @@ pypdf
 scikit-learn
 numpy
 sentence-transformers
+chromadb
+spacy
