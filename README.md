@@ -146,7 +146,7 @@ Question
    └─ Request queue → Async Ollama stream → Cache result → Return
 ```
 
-**Dictionary layer** — I wrote ~60 Q&A pairs for common pit questions. They get embedded with `sentence-transformers` on startup so the bot can match questions even when the wording is different. When it hits a dictionary match, it sends the answer to the LLM to rephrase it slightly so it sounds different each time, then waits a random 5–15 seconds before responding so it looks like it's thinking.
+**Dictionary layer** — I wrote ~60 Q&A pairs for common pit questions. They get embedded with `sentence-transformers` on startup so the bot can match questions even when the wording is different.
 
 **RAG layer** — `robot_data.txt` and the game manual PDF are chunked using spaCy's sentence detector with overlap, then embedded and stored in ChromaDB. Retrieval uses cosine similarity boosted by keyword overlap scoring. Falls back to TF-IDF + bigrams if ChromaDB is unavailable.
 
