@@ -17,20 +17,12 @@ def get_local_ip():
 print("AVOCADO - FRC Team 10600 Pit Assistant")
 print("Two Steps Ahead")
 
-# Start Ollama in the background
-print("  [..] Starting Ollama...")
+print("[..] Starting Ollama...")
 try:
     if sys.platform == "win32":
-        subprocess.Popen(
-            ["ollama", "serve"],
-            creationflags=subprocess.CREATE_NEW_CONSOLE
-        )
+        subprocess.Popen(["ollama", "serve"], creationflags = subprocess.CREATE_NEW_CONSOLE)
     else:
-        subprocess.Popen(
-            ["ollama", "serve"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        subprocess.Popen(["ollama", "serve"], stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
     time.sleep(4)
     print("[OK] Ollama started")
 except FileNotFoundError:
@@ -48,10 +40,9 @@ print()
 print("Press Ctrl+C to stop")
 print()
 
-# Start the FastAPI server — always from the script's own directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
 try:
-    subprocess.run([sys.executable, os.path.join(script_dir, "main.py")], cwd=script_dir)
+    subprocess.run([sys.executable, os.path.join(script_dir, "main.py")], cwd = script_dir)
 except KeyboardInterrupt:
     print()
-    print("  Server stopped.")
+    print("Server stopped.")
