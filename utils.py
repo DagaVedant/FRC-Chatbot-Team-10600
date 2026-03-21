@@ -1,6 +1,4 @@
-# ── utils.py ──────────────────────────────────────────────────────────────────
 import re
-
 
 def preprocess_input(text: str) -> str:
     text = text.strip().lower()
@@ -8,25 +6,16 @@ def preprocess_input(text: str) -> str:
     text = text.rstrip("?!.,;:")
     return text
 
-
 def postprocess_output(text: str) -> str:
     text = text.strip()
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    text = re.sub(r"<think>.*?</think>", "", text, flags = re.DOTALL)
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
-    text = re.sub(r"\*(.*?)\*",     r"\1", text)
-    text = re.sub(r"`(.*?)`",       r"\1", text)
+    text = re.sub(r"\*(.*?)\*", r"\1", text)
+    text = re.sub(r"`(.*?)`", r"\1", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
-
 def split_into_chunks(text: str, chunk_size: int = 400) -> list:
-    """
-    Sentence-aware chunking with overlap.
-    Uses spaCy if available, falls back to regex splitter.
-    Each chunk starts with the last sentence of the previous one
-    so facts at boundaries are never lost.
-    """
-    # Try spaCy first for better sentence detection
     try:
         import spacy
         try:
@@ -37,8 +26,8 @@ def split_into_chunks(text: str, chunk_size: int = 400) -> list:
         nlp = None
 
     paragraphs = re.split(r"\n\s*\n", text.strip())
-    chunks     = []
-    prev_tail  = ""
+    chunks = []
+    prev_tail = ""
 
     for p in paragraphs:
         p = p.strip()
@@ -47,9 +36,8 @@ def split_into_chunks(text: str, chunk_size: int = 400) -> list:
 
         block = (prev_tail + " " + p).strip() if prev_tail else p
 
-        # Sentence split
         if nlp:
-            doc       = nlp(block)
+            doc = nlp(block)
             sentences = [s.text.strip() for s in doc.sents if s.text.strip()]
         else:
             sentences = re.split(r"(?<=[.!?])\s+", block)
