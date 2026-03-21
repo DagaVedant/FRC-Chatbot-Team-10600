@@ -6,9 +6,13 @@ import time
 import random
 import asyncio
 import requests
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pypdf import PdfReader
+
+# Always run relative to this file's location so paths work from anywhere
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from config import (
     PORT, DATA_FILE, GAME_MANUAL_FILE, DICTIONARY_FILE,
@@ -55,7 +59,6 @@ def load_json(path: str) -> dict:
 
 # ── APP ───────────────────────────────────────────────────────────────────────
 
-app    = FastAPI()
 rag    = RAGEngine()
 memory = MemoryStore()
 
@@ -64,7 +67,6 @@ system_prompt = ""
 WEB_UI        = ""
 
 
-@app.on_event("startup")
 def startup():
     global matcher, system_prompt, WEB_UI
 
@@ -72,7 +74,7 @@ def startup():
 
     # Load HTML
     ui_path = os.path.join("frontend", "web_ui.html")
-    WEB_UI  = load_text(ui_path) or "<h1>UI not found — place web_ui.html in frontend/</h1>"
+    WEB_UI  = load_text(ui_path) or "<h1>UI not found — place index.html in frontend/</h1>"
 
     # Ingest robot data
     robot_text = load_text(DATA_FILE)
@@ -109,6 +111,14 @@ def startup():
 
 
 # ── ROUTES ────────────────────────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    startup()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/", response_class=HTMLResponse)
 def serve_ui():
@@ -170,6 +180,35 @@ async def chat(req: Request):
 
     if not msg:
         return JSONResponse({"error": "message required"}, status_code=400)
+
+    # Step 1 — check if Ollama is reachable (offline fallback)
+    try:
+        requests.get("http://localhost:11434", timeout=2)
+        ollama_alive = True
+    except Exception:
+        ollama_alive = False
+
+    # If Ollama is down, force dictionary-only mode
+    if not ollama_alive:
+        instant = matcher.match(msg) if matcher else None
+        if instant:
+            start = time.time()
+            fake_delay = random.uniform(3, 8)
+            await asyncio.sleep(fake_delay)
+            elapsed = time.time() - start
+            memory.add(session_id, "user", msg)
+            memory.add(session_id, "assistant", instant)
+            return {
+                "reply": instant,
+                "source": "dictionary",
+                "chunks_used": 0,
+                "session_id": session_id,
+                "think_seconds": round(elapsed, 1),
+                "offline_mode": True
+            }
+        return JSONResponse({
+            "error": "AI model is offline and no dictionary match found. Ask a team member directly!"
+        }, status_code=503)
 
     # Step 1 — semantic dictionary match
     instant = matcher.match(msg) if matcher else None
@@ -233,6 +272,106 @@ async def clear_rag():
 async def clear_session(session_id: str):
     memory.clear(session_id)
     return {"message": f"Session {session_id} cleared"}
+
+
+# ── ADMIN PANEL ───────────────────────────────────────────────────────────────
+
+ADMIN_PASSWORD = "avocado2026"   # change this before comp
+
+ADMIN_UI = open(os.path.join("frontend", "admin.html"), "r", encoding="utf-8").read()
+
+import secrets
+_admin_tokens: set = set()
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_ui():
+    return HTMLResponse(ADMIN_UI)
+
+@app.post("/admin/login")
+async def admin_login(req: Request):
+    body = await req.json()
+    if body.get("password") == ADMIN_PASSWORD:
+        token = secrets.token_hex(16)
+        _admin_tokens.add(token)
+        return {"token": token}
+    return JSONResponse({"error": "wrong password"}, status_code=401)
+
+def check_admin(req: Request):
+    return req.headers.get("X-Admin-Token") in _admin_tokens
+
+@app.get("/admin/stats")
+def admin_stats(req: Request):
+    if not check_admin(req):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    try:
+        requests.get("http://localhost:11434", timeout=2)
+        ollama_ok = "online"
+    except:
+        ollama_ok = "offline"
+    dict_count = len(matcher.dictionary) if matcher else 0
+    return {
+        "rag_chunks": len(rag.chunks),
+        "active_sessions": memory.count(),
+        "dict_entries": dict_count,
+        "ollama": ollama_ok,
+        "model": MODEL_NAME
+    }
+
+@app.get("/admin/robot-data")
+def admin_get_robot(req: Request):
+    if not check_admin(req):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    content = load_text(DATA_FILE)
+    return {"content": content}
+
+@app.post("/admin/robot-data")
+async def admin_save_robot(req: Request):
+    if not check_admin(req):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    body = await req.json()
+    content = body.get("content", "")
+    try:
+        os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            f.write(content)
+        rag.clear()
+        n = rag.ingest(content, CHUNK_SIZE_ROBOT)
+        manual = load_pdf(GAME_MANUAL_FILE)
+        if manual:
+            rag.ingest(manual, CHUNK_SIZE_MANUAL)
+        return {"message": f"Saved and reloaded — {n} new chunks indexed"}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.get("/admin/dictionary")
+def admin_get_dict(req: Request):
+    if not check_admin(req):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    content = load_json(DICTIONARY_FILE)
+    return {"content": content}
+
+@app.post("/admin/dictionary")
+async def admin_save_dict(req: Request):
+    global matcher
+    if not check_admin(req):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    body = await req.json()
+    content = body.get("content", {})
+    try:
+        os.makedirs(os.path.dirname(DICTIONARY_FILE), exist_ok=True)
+        with open(DICTIONARY_FILE, "w", encoding="utf-8") as f:
+            json.dump(content, f, indent=2)
+        matcher = SemanticMatcher(content)
+        return {"message": f"Saved and reloaded — {len(content)} entries"}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.post("/admin/clear-sessions")
+def admin_clear_sessions(req: Request):
+    if not check_admin(req):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    memory._store.clear()
+    return {"message": "All sessions cleared"}
 
 
 # ── START ─────────────────────────────────────────────────────────────────────
