@@ -1,10 +1,8 @@
-# Team data — keep private
 data/robot_data.txt
 data/dictionary.json
 data/prompts.json
 data/game_manual.pdf
  
-# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -12,6 +10,5 @@ __pycache__/
 venv/
 .venv/
  
-# OS
 .DS_Store
 Thumbs.db
