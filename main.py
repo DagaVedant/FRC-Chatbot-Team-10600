@@ -256,7 +256,7 @@ async def chat(req: Request):
     instant = matcher.match(msg) if matcher else None
     if instant:
         start = time.time()
-        fake_delay = random.uniform(5,15)
+        fake_delay = random.uniform(3,10)
         loop = asyncio.get_event_loop()
         reworded, _ = await asyncio.gather(
             loop.run_in_executor(None, _reword_sync, instant),
@@ -284,7 +284,7 @@ async def chat(req: Request):
     start = time.time()
     full_reply = ""
 
-    async with req_queue:
+    async with req_queue: # type: ignore
         async for token in stream_ollama(msg, chunks, session_id, memory, system_prompt):
             full_reply += token
 
@@ -303,16 +303,15 @@ async def chat(req: Request):
     return {"reply":reply,"source":"ai","chunks_used":len(chunks),"session_id":session_id,"think_seconds":round(elapsed,1)}
 
 @app.get("/chat/stream")
-async def chat_stream(message: str, session_id: str = None):
+async def chat_stream(message: str, session_id: str = None): # type: ignore
     """SSE endpoint — tokens arrive in real time."""
     if not session_id:
         session_id = str(uuid.uuid4())
     chunks, confidence = rag.retrieve(message)
-
     async def event_gen():
         yield f"data: {json.dumps({'type':'meta','session_id':session_id,'chunks_used':len(chunks)})}\n\n"
         full = ""
-        async with req_queue:
+        async with req_queue: # type: ignore
             async for token in stream_ollama(message,chunks,session_id,memory,system_prompt):
                 full += token
                 yield f"data: {json.dumps({'type':'token','content':token})}\n\n"
